@@ -1,0 +1,26 @@
+import fetch from 'node-fetch';
+
+const baseUrl = `http://${process.env.AWS_LAMBDA_RUNTIME_API}/2022-07-01/telemetry`;
+
+export const subscribe = async (extensionId, subscriptionBody, server) => {
+    const res = await fetch(baseUrl, {
+        method: 'put',
+        body: JSON.stringify(subscriptionBody),
+        headers: {
+            'Content-Type': 'application/json',
+            'Lambda-Extension-Identifier': extensionId,
+        }
+    });
+
+    switch (res.status) {
+        case 200:
+            console.info('logs subscription ok: ', await res.text());
+            break;
+        case 202:
+            console.warn('WARNING!!! Telemetry API is not supported! Is this extension running in a local sandbox?');
+            break;
+        default:
+            console.error('Telemetry logs subscription failed: ', await res.text());
+            break;
+    }
+};
